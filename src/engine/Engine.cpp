@@ -1,5 +1,7 @@
-#include <Engine/Engine.hpp>
+#include <engine/Engine.hpp>
+#include <log/log.hpp>
 
+#include "log/log.hpp"
 struct TransformComponent {
   float x, y;
   float width, height;
@@ -15,6 +17,9 @@ struct ColorComponent {
 
 namespace lw {
 Engine::Engine(std::string_view title, int width, int height) {
+  init_logging();
+  m_logger = create_logger("Engine");
+  m_logger->info("Hello!");
   if (!SDL_Init(SDL_INIT_VIDEO)) {
     throw std::runtime_error("SDL_Init 失败: " + std::string(SDL_GetError()));
   }

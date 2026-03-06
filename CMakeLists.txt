@@ -6,6 +6,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 include(FindDependencies)
+include(GrepConfig)
+
+add_executable(${PROJECT_NAME})
 
 add_subdirectory(src)
 

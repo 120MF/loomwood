@@ -3,6 +3,7 @@
 
 #include <SDL3/SDL.h>
 #include <entt/entt.hpp>
+#include <spdlog/spdlog.h>
 
 namespace lw {
 
@@ -23,6 +24,7 @@ private:
   bool m_isRunning = false;
   uint64_t m_lastTime = 0;
   entt::registry m_registry;
+  std::shared_ptr<spdlog::logger> m_logger;
 };
 
 } // namespace lw
