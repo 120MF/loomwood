@@ -1,0 +1,22 @@
+<rml>
+<head>
+    <title>Main Menu</title>
+    <link type="text/rcss" href="main_menu.rcss"/>
+</head>
+<body>
+
+<div id="menu">
+    <div id="title">织源工坊</div>
+    <div id="subtitle">The Loomwood Crafter</div>
+    <div id="divider"/>
+
+    <div class="menu-btn">ui_main_start_game</div>
+    <div class="menu-btn">ui_main_continue</div>
+    <div class="menu-btn">ui_main_settings</div>
+    <div class="menu-btn">ui_main_quit</div>
+</div>
+
+<div id="footer">v0.0.1 · pre-alpha</div>
+
+</body>
+</rml>

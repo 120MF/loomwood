@@ -14,15 +14,20 @@ public:
     WindowService();
     ~WindowService();
 
-    [[nodiscard]] SDL_Window*   window()   const noexcept { return m_window; }
-    [[nodiscard]] SDL_Renderer* renderer() const noexcept { return m_renderer; }
+    [[nodiscard]] SDL_Window*   window()        const noexcept { return m_window; }
+    [[nodiscard]] SDL_Renderer* renderer()      const noexcept { return m_renderer; }
+    [[nodiscard]] int           designWidth()   const noexcept { return m_designWidth; }
+    [[nodiscard]] int           designHeight()  const noexcept { return m_designHeight; }
 
 private:
-    SDL_Window*   m_window   = nullptr;
-    SDL_Renderer* m_renderer = nullptr;
+    SDL_Window*   m_window       = nullptr;
+    SDL_Renderer* m_renderer     = nullptr;
+    int           m_designWidth  = 1920;
+    int           m_designHeight = 1080;
     std::shared_ptr<spdlog::logger> m_logger;
 };
 
 } // namespace lw
 
 #endif // LOOMWOOD_WINDOW_SERVICE_HPP
+

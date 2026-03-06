@@ -1,5 +1,6 @@
 #include <engine/RenderSystem.hpp>
 #include <engine/WindowService.hpp>
+#include <engine/UiSystem.hpp>
 #include <engine/components.hpp>
 #include <entt/entt.hpp>
 
@@ -8,12 +9,13 @@ namespace lw
 
 void RenderSystem::render(entt::registry& registry)
 {
-    auto& window = entt::locator<WindowService>::value();
+    auto& window   = entt::locator<WindowService>::value();
     SDL_Renderer* renderer = window.renderer();
 
     SDL_SetRenderDrawColor(renderer, 30, 30, 30, 255);
     SDL_RenderClear(renderer);
 
+    // --- Game world ---
     auto view = registry.view<TransformComponent, ColorComponent>();
     for (auto entity : view)
     {
@@ -24,6 +26,9 @@ void RenderSystem::render(entt::registry& registry)
         SDL_FRect rect = { transform.x, transform.y, transform.width, transform.height };
         SDL_RenderFillRect(renderer, &rect);
     }
+
+    // --- UI overlay (RmlUi → RmlRenderInterface → SDL) ---
+    entt::locator<UiSystem>::value().render();
 
     SDL_RenderPresent(renderer);
 }

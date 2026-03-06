@@ -3,10 +3,12 @@
 #include <engine/InputSystem.hpp>
 #include <engine/PhysicsSystem.hpp>
 #include <engine/RenderSystem.hpp>
+#include <engine/UiSystem.hpp>
 #include <engine/components.hpp>
 #include <log/log.hpp>
 
 #include <SDL3/SDL.h>
+#include <toml++/toml.hpp>
 
 namespace lw
 {
@@ -19,6 +21,9 @@ Engine::Engine()
     entt::locator<WindowService>::emplace<WindowService>();
     entt::locator<InputSystem>::emplace<InputSystem>();
     entt::locator<PhysicsSystem>::emplace<PhysicsSystem>();
+    // UiSystem installs Rml interfaces and calls Rml::Initialise(); must
+    // come after WindowService (needs the SDL renderer) and before RenderSystem.
+    entt::locator<UiSystem>::emplace<UiSystem>();
     entt::locator<RenderSystem>::emplace<RenderSystem>();
 
     m_lastTime = SDL_GetTicksNS();
@@ -31,6 +36,7 @@ Engine::~Engine()
 {
     // 逆序销毁，确保 WindowService 最后释放 SDL 资源
     entt::locator<RenderSystem>::reset();
+    entt::locator<UiSystem>::reset();
     entt::locator<PhysicsSystem>::reset();
     entt::locator<InputSystem>::reset();
     entt::locator<WindowService>::reset();
@@ -38,6 +44,13 @@ Engine::~Engine()
 
 void Engine::run()
 {
+    // --- UI initialisation (once, before loop) ---
+    {
+        auto tbl    = toml::parse_file("configs/language.toml");
+        auto locale = tbl["language"]["locale"].value_or(std::string_view{"en_US"});
+        entt::locator<UiSystem>::value().init(std::string(locale));
+    }
+
     while (m_isRunning)
     {
         entt::locator<InputSystem>::value().process(m_isRunning);
@@ -47,6 +60,7 @@ void Engine::run()
         m_lastTime = current_time;
 
         entt::locator<PhysicsSystem>::value().update(m_registry, dt);
+        entt::locator<UiSystem>::value().update(dt);
         entt::locator<RenderSystem>::value().render(m_registry);
     }
 }

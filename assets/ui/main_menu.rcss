@@ -1,0 +1,95 @@
+/* 设计分辨率: 1920x1080
+   布局单位用 px（坐标不随 dp-ratio 变化），
+   font-size 用 dp（按屏幕密度重新栅格化，保证清晰）。 */
+
+body {
+    margin: 0;
+    padding: 0;
+    width: 1920px;
+    height: 1080px;
+    background-color: rgba(10, 8, 6, 0.82);
+    font-family: LXGW WenKai;
+    font-size: 22dp;
+    color: #e8e0d0;
+}
+
+/* 居中容器：left = (1920 - 400) / 2 = 760px */
+#menu {
+    position: absolute;
+    top: 280px;
+    left: 760px;
+    width: 400px;
+    overflow: visible;
+}
+
+#title {
+    width: 400px;
+    font-family: Source Han Serif VF;
+    font-size: 56dp;
+    font-weight: bold;
+    color: #f5d47a;
+    text-align: center;
+    padding-top: 4px;
+    padding-bottom: 4px;
+    margin-top: 0;
+    margin-bottom: 10px;
+    overflow: visible;
+}
+
+#subtitle {
+    width: 400px;
+    font-size: 16dp;
+    color: #a09080;
+    text-align: center;
+    margin-top: 0;
+    margin-bottom: 44px;
+    overflow: visible;
+}
+
+#divider {
+    width: 260px;
+    height: 1px;
+    background-color: #6a5a3a;
+    margin-left: 70px;
+    margin-bottom: 36px;
+}
+
+.menu-btn {
+    display: block;
+    width: 360px;
+    padding-top: 15px;
+    padding-bottom: 15px;
+    padding-left: 24px;
+    padding-right: 24px;
+    margin-bottom: 16px;
+    background-color: rgba(255, 255, 255, 0.04);
+    border-width: 1px;
+    border-color: rgba(245, 212, 122, 0.25);
+    font-family: LXGW WenKai;
+    font-size: 20dp;
+    color: #d8cfc0;
+    text-align: center;
+    overflow: visible;
+}
+
+.menu-btn:hover {
+    background-color: rgba(245, 212, 122, 0.12);
+    border-color: rgba(245, 212, 122, 0.65);
+    color: #f5d47a;
+}
+
+.menu-btn:active {
+    background-color: rgba(245, 212, 122, 0.22);
+    color: #ffffff;
+}
+
+#footer {
+    position: absolute;
+    top: 1035px;
+    left: 0;
+    width: 1880px;
+    padding-right: 40px;
+    font-size: 13dp;
+    color: #50483a;
+    text-align: right;
+}
