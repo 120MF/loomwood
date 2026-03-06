@@ -32,7 +32,7 @@ int main()
 
   try
   {
-    Engine engine("The Loomwood Crafter", 800, 600);
+    Engine engine;
     engine.run();
   }
   catch (const std::exception& e)

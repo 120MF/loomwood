@@ -11,12 +11,12 @@
 namespace lw
 {
 
-Engine::Engine(std::string_view title, int width, int height)
+Engine::Engine()
 {
     init_logging();
     m_logger = create_logger("Engine");
 
-    entt::locator<WindowService>::emplace<WindowService>(title, width, height);
+    entt::locator<WindowService>::emplace<WindowService>();
     entt::locator<InputSystem>::emplace<InputSystem>();
     entt::locator<PhysicsSystem>::emplace<PhysicsSystem>();
     entt::locator<RenderSystem>::emplace<RenderSystem>();

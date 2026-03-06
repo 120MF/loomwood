@@ -3,7 +3,6 @@
 
 #include <SDL3/SDL.h>
 #include <spdlog/spdlog.h>
-#include <string_view>
 #include <memory>
 
 namespace lw
@@ -12,7 +11,7 @@ namespace lw
 class WindowService
 {
 public:
-    WindowService(std::string_view title, int width, int height);
+    WindowService();
     ~WindowService();
 
     [[nodiscard]] SDL_Window*   window()   const noexcept { return m_window; }

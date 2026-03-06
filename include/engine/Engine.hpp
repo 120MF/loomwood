@@ -10,7 +10,7 @@ namespace lw {
 
 class Engine {
 public:
-    Engine(std::string_view title, int width, int height);
+    Engine();
     ~Engine();
     void run();
 
