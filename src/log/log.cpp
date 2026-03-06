@@ -27,7 +27,7 @@ namespace lw
     std::call_once(init_flag, [&]()
     {
       // parse log.toml config
-      auto tbl = toml::parse_file("config/log.toml");
+      auto tbl = toml::parse_file("configs/log.toml");
       const auto is_console_enabled =
         tbl["console_sink"]["enable"].value<bool>().value_or(false);
       const auto is_file_enabled =
