@@ -16,6 +16,8 @@
     <div class="menu-btn">ui_main_quit</div>
 </div>
 
+<img id="mascot" src="../textures/pictures/test.png"/>
+
 <div id="footer">v0.0.1 · pre-alpha</div>
 
 </body>

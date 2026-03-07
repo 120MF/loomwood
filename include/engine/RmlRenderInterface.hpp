@@ -42,6 +42,10 @@ public:
     void EnableScissorRegion(bool enable) override;
     void SetScissorRegion(Rml::Rectanglei region) override;
 
+    // Call once before Rml::Context::Render() to set the blend mode for the
+    // entire render pass (avoids redundant SDL state changes per geometry call).
+    void beginRenderPass();
+
 private:
     // Converts RGBA pixel data in-place to premultiplied alpha.
     static void premultiplyAlpha(uint8_t* pixels, int count);
@@ -60,8 +64,12 @@ private:
     // Reusable per-frame vertex staging buffer.
     std::vector<SDL_Vertex> m_stagingVerts;
 
+    // Cached renderer pointer (WindowService must be registered before construction).
+    SDL_Renderer* m_renderer = nullptr;
+
     // Premultiplied-alpha blend mode (matches official RmlUi SDL backend).
-    SDL_BlendMode m_blendMode = SDL_BLENDMODE_BLEND;
+    // Value is invalid until the constructor calls SDL_ComposeCustomBlendMode.
+    SDL_BlendMode m_blendMode = {};
 
     bool      m_scissorEnabled = false;
     SDL_Rect  m_scissorRegion  = {};

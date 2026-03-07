@@ -115,7 +115,10 @@ void UiSystem::update(float /*dt*/)
 void UiSystem::render()
 {
     if (m_context)
+    {
+        m_renderInterface->beginRenderPass();
         m_context->Render();
+    }
 }
 
 } // namespace lw

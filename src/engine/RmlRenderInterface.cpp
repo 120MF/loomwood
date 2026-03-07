@@ -2,14 +2,19 @@
 #include <engine/WindowService.hpp>
 #include <log/log.hpp>
 
-#include <entt/entt.hpp>
 #include <SDL3/SDL.h>
+#include <SDL3_image/SDL_image.h>
+#include <entt/entt.hpp>
 
 namespace lw
 {
 
 RmlRenderInterface::RmlRenderInterface()
 {
+    // WindowService must already be registered in the locator before this
+    // object is constructed (guaranteed by Engine initialization order).
+    m_renderer = entt::locator<WindowService>::value().renderer();
+
     // Premultiplied-alpha blend mode:
     //   dst_rgb   = src_rgb   * 1           + dst_rgb   * (1 - src_alpha)
     //   dst_alpha = src_alpha * 1           + dst_alpha * (1 - src_alpha)
@@ -23,6 +28,11 @@ RmlRenderInterface::RmlRenderInterface()
 // ---------------------------------------------------------------------------
 // Geometry
 // ---------------------------------------------------------------------------
+
+void RmlRenderInterface::beginRenderPass()
+{
+    SDL_SetRenderDrawBlendMode(m_renderer, m_blendMode);
+}
 
 Rml::CompiledGeometryHandle RmlRenderInterface::CompileGeometry(
     Rml::Span<const Rml::Vertex> vertices,
@@ -47,9 +57,7 @@ void RmlRenderInterface::RenderGeometry(
         return;
 
     const CompiledGeometry& geom = it->second;
-    auto* renderer  = entt::locator<WindowService>::value().renderer();
-    auto* sdl_tex   = reinterpret_cast<SDL_Texture*>(texture);
-    const int n     = static_cast<int>(geom.vertices.size());
+    const int n = static_cast<int>(geom.vertices.size());
 
     // Grow staging buffer on demand (never shrinks; amortised allocation).
     if (static_cast<int>(m_stagingVerts.size()) < n)
@@ -59,6 +67,8 @@ void RmlRenderInterface::RenderGeometry(
     // NOTE: RmlUi vertex positions are in LOCAL element space; translation is
     // the element's absolute document position. Using SDL_Vertex copies avoids
     // the viewport-shift approach which clips glyphs with negative local y.
+    constexpr float kInv255 = 1.0f / 255.0f;
+    auto* sdl_tex = reinterpret_cast<SDL_Texture*>(texture);
     for (int i = 0; i < n; ++i)
     {
         const auto& src = geom.vertices[i];
@@ -66,14 +76,13 @@ void RmlRenderInterface::RenderGeometry(
         dst.position  = { src.position.x + translation.x,
                           src.position.y + translation.y };
         dst.tex_coord = { src.tex_coord.x, src.tex_coord.y };
-        dst.color     = { src.colour.red   / 255.0f,
-                          src.colour.green / 255.0f,
-                          src.colour.blue  / 255.0f,
-                          src.colour.alpha / 255.0f };
+        dst.color     = { src.colour.red   * kInv255,
+                          src.colour.green * kInv255,
+                          src.colour.blue  * kInv255,
+                          src.colour.alpha * kInv255 };
     }
 
-    SDL_SetRenderDrawBlendMode(renderer, m_blendMode);
-    SDL_RenderGeometry(renderer, sdl_tex,
+    SDL_RenderGeometry(m_renderer, sdl_tex,
         m_stagingVerts.data(), n,
         geom.indices.data(), static_cast<int>(geom.indices.size()));
 }
@@ -90,24 +99,23 @@ void RmlRenderInterface::ReleaseGeometry(Rml::CompiledGeometryHandle handle)
 void RmlRenderInterface::premultiplyAlpha(uint8_t* pixels, int count)
 {
     // count = number of pixels; each pixel is 4 bytes (RGBA).
+    // +127 rounds to nearest instead of truncating, avoiding visible banding
+    // at semi-transparent edges.
     for (int i = 0; i < count; ++i)
     {
         uint8_t* p = pixels + i * 4;
         const uint8_t a = p[3];
-        p[0] = static_cast<uint8_t>(static_cast<int>(p[0]) * a / 255);
-        p[1] = static_cast<uint8_t>(static_cast<int>(p[1]) * a / 255);
-        p[2] = static_cast<uint8_t>(static_cast<int>(p[2]) * a / 255);
+        p[0] = static_cast<uint8_t>((static_cast<int>(p[0]) * a + 127) / 255);
+        p[1] = static_cast<uint8_t>((static_cast<int>(p[1]) * a + 127) / 255);
+        p[2] = static_cast<uint8_t>((static_cast<int>(p[2]) * a + 127) / 255);
     }
 }
 
 SDL_Texture* RmlRenderInterface::createTextureFromSurface(SDL_Surface* surface)
 {
-    auto* renderer = entt::locator<WindowService>::value().renderer();
-    SDL_Texture* tex = SDL_CreateTextureFromSurface(renderer, surface);
+    SDL_Texture* tex = SDL_CreateTextureFromSurface(m_renderer, surface);
     if (tex)
-    {
         SDL_SetTextureBlendMode(tex, m_blendMode);
-    }
     return tex;
 }
 
@@ -115,7 +123,7 @@ Rml::TextureHandle RmlRenderInterface::LoadTexture(
     Rml::Vector2i&     texture_dimensions,
     const Rml::String& source)
 {
-    SDL_Surface* surface = SDL_LoadBMP(source.c_str());
+    SDL_Surface* surface = IMG_Load(source.c_str());
     if (!surface)
     {
         get_default_logger()->warn("[RmlUi] LoadTexture failed '{}': {}", source, SDL_GetError());
@@ -177,18 +185,14 @@ void RmlRenderInterface::ReleaseTexture(Rml::TextureHandle texture)
 void RmlRenderInterface::EnableScissorRegion(bool enable)
 {
     m_scissorEnabled = enable;
-    auto* renderer = entt::locator<WindowService>::value().renderer();
-    SDL_SetRenderClipRect(renderer, enable ? &m_scissorRegion : nullptr);
+    SDL_SetRenderClipRect(m_renderer, enable ? &m_scissorRegion : nullptr);
 }
 
 void RmlRenderInterface::SetScissorRegion(Rml::Rectanglei region)
 {
     m_scissorRegion = { region.Left(), region.Top(), region.Width(), region.Height() };
     if (m_scissorEnabled)
-    {
-        auto* renderer = entt::locator<WindowService>::value().renderer();
-        SDL_SetRenderClipRect(renderer, &m_scissorRegion);
-    }
+        SDL_SetRenderClipRect(m_renderer, &m_scissorRegion);
 }
 
 } // namespace lw

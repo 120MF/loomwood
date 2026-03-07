@@ -6,6 +6,26 @@
 namespace lw
 {
 
+namespace
+{
+// Returns true and writes 'out' if 'key' is found in the given locale bucket.
+bool lookupKey(
+    const std::unordered_map<std::string, std::unordered_map<std::string, std::string>>& dicts,
+    const std::string& locale,
+    const std::string& key,
+    Rml::String&       out)
+{
+    const auto locale_it = dicts.find(locale);
+    if (locale_it == dicts.end())
+        return false;
+    const auto key_it = locale_it->second.find(key);
+    if (key_it == locale_it->second.end())
+        return false;
+    out = key_it->second;
+    return true;
+}
+} // namespace
+
 RmlSystemInterface::RmlSystemInterface()
 {
     m_logger = create_logger("RmlUi");
@@ -70,30 +90,11 @@ int RmlSystemInterface::TranslateString(
     Rml::String&       translated,
     const Rml::String& input)
 {
-    const auto locale_it = m_dictionaries.find(m_locale);
-    if (locale_it != m_dictionaries.end())
-    {
-        const auto key_it = locale_it->second.find(input);
-        if (key_it != locale_it->second.end())
-        {
-            translated = key_it->second;
-            return 1;
-        }
-    }
+    if (lookupKey(m_dictionaries, m_locale, input, translated))
+        return 1;
     // Fallback: try en_US before giving up.
-    if (m_locale != "en_US")
-    {
-        const auto fallback_it = m_dictionaries.find("en_US");
-        if (fallback_it != m_dictionaries.end())
-        {
-            const auto key_it = fallback_it->second.find(input);
-            if (key_it != fallback_it->second.end())
-            {
-                translated = key_it->second;
-                return 1;
-            }
-        }
-    }
+    if (m_locale != "en_US" && lookupKey(m_dictionaries, "en_US", input, translated))
+        return 1;
     translated = input;
     return 0;
 }

@@ -83,6 +83,15 @@ body {
     color: #ffffff;
 }
 
+/* 吉祥物图片：右下角，宽度 500px，比例自适应 */
+#mascot {
+    position: absolute;
+    width: 500px;
+    height: 280px;
+    top: 760px;
+    left: 1340px;
+}
+
 #footer {
     position: absolute;
     top: 1035px;
